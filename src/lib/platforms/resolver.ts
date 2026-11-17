@@ -1,6 +1,8 @@
 /**
  * Bộ nhận diện và xử lý liên kết đa sàn: Shopee, Lazada, TikTok Shop
+ * Tích hợp ACCESSTRADE API chính thức
  */
+import { createAccesstradeLink } from '@/lib/accesstrade/client';
 
 export type PlatformType = 'shopee' | 'lazada' | 'tiktok' | 'unknown';
 
@@ -66,7 +68,7 @@ export function detectPlatform(url: string): PlatformType {
 }
 
 /**
- * Xử lý link đa sàn và tạo link tracking kèm deeplink mở app
+ * Xử lý link đa sàn và tạo link tracking Accesstrade kèm deeplink mở app
  */
 export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: string) {
   const urlMatch = rawInput.match(/https?:\/\/[^\s]+/i);
@@ -79,11 +81,8 @@ export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: 
   let itemId = '';
   let shopId = '';
   let productName = 'Sản phẩm ' + PLATFORMS[platform].name;
-  let deeplinkUrl = targetUrl;
-  let affiliateUrl = targetUrl;
 
   try {
-    // Theo dõi redirect để lấy canonical URL
     const response = await fetch(targetUrl, {
       method: 'HEAD',
       redirect: 'follow',
@@ -101,7 +100,7 @@ export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: 
 
   const parsedUrl = new URL(canonicalUrl);
 
-  // Xử lý theo từng sàn
+  // Bóc tách ID sản phẩm theo từng sàn
   if (platform === 'shopee') {
     const matchStandard = parsedUrl.pathname.match(/-i\.(\d+)\.(\d+)/);
     const matchProduct = parsedUrl.pathname.match(/\/product\/(\d+)\/(\d+)/);
@@ -115,33 +114,47 @@ export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: 
       shopId = matchProduct[1];
       itemId = matchProduct[2];
     }
-
-    parsedUrl.searchParams.set('aff_sub', affTag);
-    parsedUrl.searchParams.set('utm_source', 'affiliate');
-    parsedUrl.searchParams.set('utm_medium', 'tiemma');
-    parsedUrl.searchParams.set('utm_campaign', affTag);
-    affiliateUrl = parsedUrl.toString();
-
-    deeplinkUrl = itemId && shopId
-      ? `shopeevn://product?shopId=${shopId}&itemId=${itemId}`
-      : affiliateUrl;
   } else if (platform === 'lazada') {
-    // Lazada URL patterns
     const matchLzd = parsedUrl.pathname.match(/-i(\d+)-s(\d+)\.html/);
     if (matchLzd) {
       itemId = matchLzd[1];
       shopId = matchLzd[2];
     }
-    parsedUrl.searchParams.set('aff_sub', affTag);
-    parsedUrl.searchParams.set('laz_token', affTag);
-    affiliateUrl = parsedUrl.toString();
-    deeplinkUrl = itemId ? `lazada://item?itemId=${itemId}` : affiliateUrl;
     productName = 'Sản phẩm Lazada';
   } else if (platform === 'tiktok') {
-    parsedUrl.searchParams.set('aff_id', affTag);
-    affiliateUrl = parsedUrl.toString();
-    deeplinkUrl = targetUrl;
     productName = 'Sản phẩm TikTok Shop';
+  }
+
+  // 1. Thử tạo link Affiliate qua ACCESSTRADE API
+  const atResult = await createAccesstradeLink(platform, canonicalUrl, affTag);
+
+  let affiliateUrl = atResult?.shortLink || atResult?.affLink || '';
+  let isAccesstrade = Boolean(atResult);
+
+  // 2. Chế độ Fallback nếu chưa điền Accesstrade token
+  if (!affiliateUrl) {
+    if (platform === 'shopee') {
+      parsedUrl.searchParams.set('aff_sub', affTag);
+      parsedUrl.searchParams.set('utm_source', 'affiliate');
+      parsedUrl.searchParams.set('utm_medium', 'tiemma');
+      parsedUrl.searchParams.set('utm_campaign', affTag);
+      affiliateUrl = parsedUrl.toString();
+    } else if (platform === 'lazada') {
+      parsedUrl.searchParams.set('aff_sub', affTag);
+      parsedUrl.searchParams.set('laz_token', affTag);
+      affiliateUrl = parsedUrl.toString();
+    } else {
+      parsedUrl.searchParams.set('aff_id', affTag);
+      affiliateUrl = parsedUrl.toString();
+    }
+  }
+
+  // 3. Tạo Deeplink App thông minh
+  let deeplinkUrl = affiliateUrl;
+  if (platform === 'shopee' && itemId && shopId) {
+    deeplinkUrl = `shopeevn://product?shopId=${shopId}&itemId=${itemId}`;
+  } else if (platform === 'lazada' && itemId) {
+    deeplinkUrl = `lazada://item?itemId=${itemId}`;
   }
 
   return {
@@ -154,5 +167,6 @@ export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: 
     shopId,
     affiliateUrl,
     deeplinkUrl,
+    isAccesstrade,
   };
 }
