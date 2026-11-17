@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { resolveShopeeProduct } from '@/lib/shopee/resolver';
-import { createAffiliateLinks } from '@/lib/shopee/affiliate';
+import { resolveMultiPlatformLink } from '@/lib/platforms/resolver';
 import { getAvailableVouchers } from '@/lib/vouchers/data';
 
 export async function POST(request: NextRequest) {
@@ -10,54 +9,34 @@ export async function POST(request: NextRequest) {
 
     if (!url || typeof url !== 'string') {
       return NextResponse.json(
-        { success: false, message: 'Vui lòng cung cấp link sản phẩm Shopee hợp lệ' },
+        { success: false, message: 'Vui lòng cung cấp link sản phẩm hợp lệ' },
         { status: 400 }
       );
     }
 
-    // 1. Phân tích và resolve link Shopee
-    const resolved = await resolveShopeeProduct(url);
+    // 1. Phân tích và resolve link đa sàn (Shopee, Lazada, TikTok Shop)
+    const result = await resolveMultiPlatformLink(url, subId);
 
-    if (!resolved.isValid) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Đường dẫn không hợp lệ hoặc không thuộc hệ thống Shopee (shopee.vn, s.shopee.vn, shope.ee)',
-        },
-        { status: 400 }
-      );
-    }
-
-    // 2. Tạo link Affiliate và Deeplink mở App
-    const affiliateResult = await createAffiliateLinks(
-      resolved.canonicalUrl,
-      resolved.shopId,
-      resolved.itemId,
-      subId
-    );
-
-    // 3. Lấy danh sách voucher gợi ý
+    // 2. Lấy voucher liên quan
     const vouchers = getAvailableVouchers();
 
     return NextResponse.json({
       success: true,
-      product: {
-        productName: resolved.productName,
-        itemId: resolved.itemId,
-        shopId: resolved.shopId,
-        canonicalUrl: resolved.canonicalUrl,
-        originalUrl: resolved.rawUrl,
+      data: {
+        platform: result.platform,
+        platformInfo: result.platformInfo,
+        productName: result.productName,
+        itemId: result.itemId,
+        shopId: result.shopId,
+        canonicalUrl: result.canonicalUrl,
+        originalUrl: result.originalUrl,
+        affiliateUrl: result.affiliateUrl,
+        deeplinkUrl: result.deeplinkUrl,
+        vouchers,
       },
-      affiliate: {
-        affiliateUrl: affiliateResult.affiliateUrl,
-        deeplinkUrl: affiliateResult.deeplinkUrl,
-        isApiGenerated: affiliateResult.isApiGenerated,
-        subId: affiliateResult.subId,
-      },
-      vouchers,
     });
   } catch (error: any) {
-    console.error('Lỗi khi convert link Shopee:', error);
+    console.error('Lỗi khi convert link đa sàn:', error);
     return NextResponse.json(
       { success: false, message: error?.message || 'Đã xảy ra lỗi trong quá trình xử lý link' },
       { status: 500 }
