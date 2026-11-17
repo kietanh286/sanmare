@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Bộ nhận diện và xử lý liên kết đa sàn: Shopee, Lazada, TikTok Shop
  * Tích hợp ACCESSTRADE API chính thức & bóc tách metadata sản phẩm
  */
@@ -153,7 +153,7 @@ export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: 
     }
 
     if (!description || description.includes('chính hãng')) {
-      description = 'Được bảo đảm bởi Shopee &bull; Freeship Xtra &bull; Hoàn xu 100%';
+      description = 'Được bảo đảm bởi Shopee • Freeship Xtra • Hoàn xu 100%';
     }
   } else if (platform === 'lazada') {
     const matchLzd = parsedUrl.pathname.match(/-i(\d+)-s(\d+)\.html/);
@@ -162,7 +162,7 @@ export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: 
       shopId = matchLzd[2];
     }
     if (!description || description.includes('chính hãng')) {
-      description = 'LazMall chính hãng 100% &bull; Miễn phí giao hàng &bull; Đổi trả 30 ngày';
+      description = 'LazMall chính hãng 100% • Miễn phí giao hàng • Đổi trả 30 ngày';
     }
   } else if (platform === 'tiktok') {
     const matchTiktokProduct = parsedUrl.pathname.match(/\/view\/product\/(\d+)/);
@@ -185,7 +185,7 @@ export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: 
     }
 
     if (!description || description.includes('chính hãng')) {
-      description = 'TikTok Shop Verified &bull; Áp dụng voucher Video & Live &bull; Đổi trả dễ dàng';
+      description = 'TikTok Shop Verified • Áp dụng voucher Video & Live • Đổi trả dễ dàng';
     }
   }
 

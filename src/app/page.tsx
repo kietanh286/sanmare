@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -149,10 +149,10 @@ export default function MinimalistApp() {
         {/* Brand Headline */}
         <div className="text-center space-y-2">
           <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
-            1 Giây Săn Mã &bull; Mở App Mua Rẻ
+            1 Giây Săn Mã • Mở App Mua Rẻ
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-normal">
-            Dán link Shopee, Lazada hoặc TikTok Shop &rarr; Tự động kích hoạt ưu đãi tốt nhất.
+            Dán link Shopee, Lazada hoặc TikTok Shop → Tự động kích hoạt ưu đãi tốt nhất.
           </p>
         </div>
 
@@ -233,7 +233,7 @@ export default function MinimalistApp() {
 
       {/* 3. Pop-up Mua Hàng Hiển Thị Thông Tin Sản Phẩm & Mức Giá */}
       {modalData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm animate-in fade-in duration-150">
           <div className="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 space-y-4 animate-in zoom-in-95 duration-150 relative">
             {/* Nút Đóng */}
             <button
@@ -247,7 +247,7 @@ export default function MinimalistApp() {
             <div className="flex items-center space-x-2">
               <span className="text-xl">{modalData.platformInfo.logo}</span>
               <span className="text-xs font-black uppercase tracking-wider text-amber-600">
-                {modalData.platformInfo.name} &bull; Đã Kích Hoạt Ưu Đãi
+                {modalData.platformInfo.name} • Đã Kích Hoạt Ưu Đãi
               </span>
             </div>
 
@@ -274,12 +274,15 @@ export default function MinimalistApp() {
 
                 {/* Khối Mức Giá */}
                 <div className="flex flex-col text-xs pt-0.5">
-                  <span className="text-[11px] text-slate-400 font-medium">
-                    Giá chưa giảm: <span className="line-through text-slate-500 font-semibold">{modalData.originalPrice}</span>
-                  </span>
-                  <span className="text-xs font-black text-amber-600 flex items-center space-x-1">
+                  {/* Chỉ hiện giá gốc nếu là số thực, không hiện placeholder */}
+                  {modalData.originalPrice && !modalData.originalPrice.includes('niêm yết') && (
+                    <span className="text-[11px] text-slate-400 font-medium">
+                      Giá gốc: <span className="line-through text-slate-500 font-semibold">{modalData.originalPrice}</span>
+                    </span>
+                  )}
+                  <span className="text-xs font-bold text-amber-600 flex items-center space-x-1">
                     <Sparkles className="w-3.5 h-3.5 text-amber-500 inline shrink-0" />
-                    <span>{modalData.discountedPrice}</span>
+                    <span>{modalData.discountedPrice || 'Giảm giá tốt nhất khi mở App'}</span>
                   </span>
                 </div>
 
@@ -347,7 +350,7 @@ export default function MinimalistApp() {
 
       {/* 4. Footer Tối Giản */}
       <footer className="py-4 text-center text-[11px] text-slate-400">
-        Mã Vàng &copy; 2026 &bull; Tối giản &bull; Nhanh chóng &bull; Miễn phí
+        Mã Vàng © 2026 • Tối giản • Nhanh chóng • Miễn phí
       </footer>
     </div>
   );
