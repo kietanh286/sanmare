@@ -19,18 +19,18 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Tiệm Mã - Săn Mã Giảm Giá Shopee & Mở App Ưu Đãi 50%',
+  title: 'Mã Vàng - 1 Giây Săn Mã &bull; Mở App Mua Rẻ',
   description:
-    'Công cụ tìm mã giảm giá Shopee tự động. Dán link sản phẩm để lấy mã Shopee Video, Freeship Xtra và mở app mua hàng với giá tốt nhất.',
+    'Công cụ tối giản giúp dán link Shopee, Lazada, TikTok Shop để tự động kích hoạt mã giảm giá Video 50%, Freeship 0Đ và mở app mua hàng ngay lập tức.',
   keywords: [
-    'tiệm mã',
+    'mã vàng',
+    'săn mã',
     'mã giảm giá shopee',
-    'săn mã shopee',
-    'mã video shopee',
-    'mã freeship shopee',
-    'shopee affiliate',
+    'mã video tiktok',
+    'lazada affiliate',
+    'voucher giảm giá',
   ],
-  authors: [{ name: 'Tiệm Mã' }],
+  authors: [{ name: 'Mã Vàng' }],
 };
 
 export default function RootLayout({
@@ -40,7 +40,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 font-sans">
+      <body className="min-h-full flex flex-col bg-[#FBFBFC] text-slate-800 font-sans">
         {children}
       </body>
     </html>
