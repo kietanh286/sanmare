@@ -226,7 +226,8 @@ export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: 
   } else if (platform === 'lazada' && itemId) {
     deeplinkUrl = `lazada://item?itemId=${itemId}`;
   } else if (platform === 'tiktok' && itemId) {
-    deeplinkUrl = `snssdk1180://ec/pdp?product_id=${itemId}`;
+    // Với TikTok Shop: Dùng deeplink PDP có kèm schema hỗ trợ mở thẳng sản phẩm, không rơi vào trang tìm kiếm
+    deeplinkUrl = `snssdk1180://ec/pdp?product_id=${itemId}&enter_from=product_detail&traffic_source_list=%5B6%5D`;
   }
 
   return {

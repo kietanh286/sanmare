@@ -26,16 +26,21 @@ function RedirectContent() {
     if (appUrl) {
       const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       if (isMobile) {
-        window.location.href = appUrl;
+        // Mở app bằng scheme
+        try {
+          window.location.href = appUrl;
+        } catch {
+          // ignore
+        }
       }
     }
 
-    // 2. Tự động chuyển hướng sang link affiliate sau 1.8 giây nếu không mở được app
+    // 2. Chuyển hướng sang link tracking sau 1.5 giây
     const timer = setTimeout(() => {
       if (toUrl) {
         window.location.href = toUrl;
       }
-    }, 1800);
+    }, 1500);
 
     const interval = setInterval(() => {
       setCountdown((prev) => (prev > 0 ? prev - 1 : 0));

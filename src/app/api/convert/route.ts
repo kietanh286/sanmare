@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveMultiPlatformLink } from '@/lib/platforms/resolver';
-import { getAvailableVouchers } from '@/lib/vouchers/data';
+import { getVouchersByPlatform } from '@/lib/vouchers/data';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,8 +17,8 @@ export async function POST(request: NextRequest) {
     // 1. Phân tích và resolve link đa sàn (Shopee, Lazada, TikTok Shop)
     const result = await resolveMultiPlatformLink(url, subId);
 
-    // 2. Lấy voucher liên quan
-    const vouchers = getAvailableVouchers();
+    // 2. Lấy voucher liên quan đúng theo sàn (Shopee / TikTok Shop / Lazada)
+    const vouchers = getVouchersByPlatform(result.platform);
 
     return NextResponse.json({
       success: true,

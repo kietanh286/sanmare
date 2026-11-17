@@ -329,22 +329,46 @@ export default function MinimalistApp() {
               </button>
             </div>
 
-            {/* Mã giảm giá áp dụng nhanh */}
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-              <span className="text-[11px] text-slate-400 font-medium">Mã hot:</span>
-              <div className="flex space-x-1.5">
-                {modalData.vouchers.slice(0, 2).map((v) => (
+            {/* Hướng dẫn nhận mã Video 50% */}
+            <div className="bg-amber-50/60 rounded-xl p-3 border border-amber-200/60 text-left space-y-1">
+              <div className="flex items-center space-x-1.5 text-xs font-bold text-amber-800">
+                <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                <span>Cách ăn mã Video 50% trên App:</span>
+              </div>
+              <p className="text-[11px] text-amber-900/80 leading-relaxed font-normal">
+                Bấm nút mở App ở trên ➔ Trên App bấm vào <strong>Giỏ hàng từ Video</strong> (hoặc bấm <strong>Lưu mã</strong> tại trang sản phẩm) để hệ thống tự động giảm từ 25% đến 50%!
+              </p>
+            </div>
+
+            {/* Danh sách mã giảm giá của sàn này */}
+            <div className="pt-2 border-t border-slate-100 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">
+                  Mã ưu đãi {modalData.platformInfo.name}:
+                </span>
+                <span className="text-[10px] text-slate-400">Chạm để sao chép</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-1.5">
+                {modalData.vouchers.map((v) => (
                   <button
                     key={v.id}
                     onClick={() => handleCopyCode(v.code)}
-                    className="px-2 py-0.5 bg-slate-100 hover:bg-amber-100 text-slate-700 rounded-md text-[11px] font-mono font-bold transition flex items-center space-x-1"
+                    className="p-2 bg-slate-50 hover:bg-amber-50 text-left rounded-xl border border-slate-200/80 hover:border-amber-300 transition group flex flex-col justify-between"
                   >
-                    <span>{v.code}</span>
-                    {copiedCode === v.code ? (
-                      <Check className="w-2.5 h-2.5 text-emerald-600" />
-                    ) : (
-                      <Copy className="w-2.5 h-2.5 text-slate-400" />
-                    )}
+                    <div className="flex items-center justify-between w-full">
+                      <span className="font-mono font-black text-xs text-slate-800 group-hover:text-amber-700">
+                        {v.code}
+                      </span>
+                      {copiedCode === v.code ? (
+                        <Check className="w-3 h-3 text-emerald-600 shrink-0" />
+                      ) : (
+                        <Copy className="w-3 h-3 text-slate-400 group-hover:text-amber-500 shrink-0" />
+                      )}
+                    </div>
+                    <span className="text-[10px] text-slate-500 font-medium truncate pt-0.5">
+                      {v.discount}
+                    </span>
                   </button>
                 ))}
               </div>
