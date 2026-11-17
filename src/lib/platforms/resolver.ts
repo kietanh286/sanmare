@@ -1,6 +1,6 @@
 /**
  * Bộ nhận diện và xử lý liên kết đa sàn: Shopee, Lazada, TikTok Shop
- * Tích hợp ACCESSTRADE API chính thức
+ * Tích hợp ACCESSTRADE API chính thức & bóc tách metadata sản phẩm
  */
 import { createAccesstradeLink } from '@/lib/accesstrade/client';
 
@@ -81,18 +81,53 @@ export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: 
   let itemId = '';
   let shopId = '';
   let productName = 'Sản phẩm ' + PLATFORMS[platform].name;
+  let productImage = '';
+  let originalPrice = '';
+  let discountedPrice = '';
+  let description = 'Sản phẩm chính hãng, hỗ trợ đổi trả và áp dụng voucher sàn';
 
   try {
     const response = await fetch(targetUrl, {
-      method: 'HEAD',
+      method: 'GET',
       redirect: 'follow',
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       },
     });
+
     if (response.url) {
       canonicalUrl = response.url;
+    }
+
+    // Đọc OpenGraph meta tags từ HTML nếu có
+    if (response.ok) {
+      const htmlText = await response.text();
+
+      // Bóc tách og:image
+      const imgMatch =
+        htmlText.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
+        htmlText.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+      if (imgMatch && imgMatch[1]) {
+        productImage = imgMatch[1];
+      }
+
+      // Bóc tách og:title
+      const titleMatch =
+        htmlText.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i) ||
+        htmlText.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:title["']/i);
+      if (titleMatch && titleMatch[1]) {
+        const cleanTitle = titleMatch[1].replace(/\|\s*(Shopee|Lazada|TikTok).*/i, '').trim();
+        if (cleanTitle) productName = cleanTitle;
+      }
+
+      // Bóc tách og:description
+      const descMatch =
+        htmlText.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i) ||
+        htmlText.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:description["']/i);
+      if (descMatch && descMatch[1]) {
+        description = descMatch[1].slice(0, 110).trim();
+      }
     }
   } catch {
     // Giữ nguyên canonicalUrl nếu fetch bị chặn
@@ -109,10 +144,16 @@ export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: 
       shopId = matchStandard[1];
       itemId = matchStandard[2];
       const slug = parsedUrl.pathname.substring(1, matchStandard.index);
-      productName = decodeURIComponent(slug).replace(/-/g, ' ');
+      if (!productName || productName.includes('Sản phẩm')) {
+        productName = decodeURIComponent(slug).replace(/-/g, ' ');
+      }
     } else if (matchProduct) {
       shopId = matchProduct[1];
       itemId = matchProduct[2];
+    }
+
+    if (!description || description.includes('chính hãng')) {
+      description = 'Được bảo đảm bởi Shopee &bull; Freeship Xtra &bull; Hoàn xu 100%';
     }
   } else if (platform === 'lazada') {
     const matchLzd = parsedUrl.pathname.match(/-i(\d+)-s(\d+)\.html/);
@@ -120,9 +161,10 @@ export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: 
       itemId = matchLzd[1];
       shopId = matchLzd[2];
     }
-    productName = 'Sản phẩm Lazada';
+    if (!description || description.includes('chính hãng')) {
+      description = 'LazMall chính hãng 100% &bull; Miễn phí giao hàng &bull; Đổi trả 30 ngày';
+    }
   } else if (platform === 'tiktok') {
-    // Trích xuất ID sản phẩm TikTok
     const matchTiktokProduct = parsedUrl.pathname.match(/\/view\/product\/(\d+)/);
     if (matchTiktokProduct) {
       itemId = matchTiktokProduct[1];
@@ -130,18 +172,27 @@ export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: 
       itemId = parsedUrl.searchParams.get('product_id') || '';
     }
 
-    // Trích xuất tên sản phẩm từ tham số og_info nếu có
+    // Trích xuất từ tham số og_info có sẵn trong link TikTok
     const ogInfo = parsedUrl.searchParams.get('og_info');
     if (ogInfo) {
       try {
         const og = JSON.parse(ogInfo);
-        if (og.title) {
-          productName = og.title;
-        }
+        if (og.title) productName = og.title;
+        if (og.image) productImage = og.image;
       } catch {
-        // bỏ qua nếu parse lỗi
+        // ignore
       }
     }
+
+    if (!description || description.includes('chính hãng')) {
+      description = 'TikTok Shop Verified &bull; Áp dụng voucher Video & Live &bull; Đổi trả dễ dàng';
+    }
+  }
+
+  // Thiết lập mức giá mẫu trực quan nếu không đọc được từ meta
+  if (!originalPrice) {
+    originalPrice = 'Giá niêm yết tại sàn';
+    discountedPrice = 'Giảm thêm 15% - 50% khi mở App';
   }
 
   // 1. Gọi ACCESSTRADE API để tạo link Affiliate chính thức
@@ -175,7 +226,6 @@ export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: 
   } else if (platform === 'lazada' && itemId) {
     deeplinkUrl = `lazada://item?itemId=${itemId}`;
   } else if (platform === 'tiktok' && itemId) {
-    // Deeplink trực tiếp vào trang sản phẩm trên App TikTok
     deeplinkUrl = `snssdk1180://ec/pdp?product_id=${itemId}`;
   }
 
@@ -185,6 +235,10 @@ export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: 
     originalUrl: targetUrl,
     canonicalUrl,
     productName,
+    productImage,
+    originalPrice,
+    discountedPrice,
+    description,
     itemId,
     shopId,
     affiliateUrl,

@@ -11,6 +11,8 @@ import {
   X,
   Clock,
   Sparkles,
+  Tag,
+  ShieldCheck,
 } from 'lucide-react';
 import { FLASH_SLOTS, getCurrentSaleEvent, SaleEvent } from '@/lib/events/sale-calendar';
 import { VoucherItem } from '@/lib/vouchers/data';
@@ -23,12 +25,17 @@ interface ConvertData {
     brandColor: string;
   };
   productName: string;
+  productImage?: string;
+  originalPrice?: string;
+  discountedPrice?: string;
+  description?: string;
   itemId?: string;
   shopId?: string;
   canonicalUrl: string;
   originalUrl: string;
   affiliateUrl: string;
   deeplinkUrl: string;
+  isAccesstrade?: boolean;
   vouchers: VoucherItem[];
 }
 
@@ -100,7 +107,7 @@ export default function MinimalistApp() {
 
   const handleCopyLink = (data: ConvertData) => {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const bridgeUrl = `${origin}/go?to=${encodeURIComponent(data.affiliateUrl)}&app=${encodeURIComponent(data.deeplinkUrl)}&platform=${data.platform}&name=${encodeURIComponent(data.productName)}`;
+    const bridgeUrl = `${origin}/go?to=${encodeURIComponent(data.affiliateUrl)}&app=${encodeURIComponent(data.deeplinkUrl)}&platform=${data.platform}&name=${encodeURIComponent(data.productName)}&img=${encodeURIComponent(data.productImage || '')}&op=${encodeURIComponent(data.originalPrice || '')}&dp=${encodeURIComponent(data.discountedPrice || '')}`;
 
     navigator.clipboard.writeText(bridgeUrl);
     setCopiedAff(true);
@@ -117,7 +124,7 @@ export default function MinimalistApp() {
   const upcomingSlot = FLASH_SLOTS.find((s) => s.hour >= currentHour) || FLASH_SLOTS[0];
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#FBFBFC] text-slate-800 selection:bg-amber-100 selection:text-amber-900">
+    <div className="min-h-screen flex flex-col justify-between bg-[#FBFBFC] text-slate-800 selection:bg-amber-100 selection:text-amber-900 font-sans">
       {/* 1. Header Tối Giản */}
       <header className="px-5 py-4 flex items-center justify-between max-w-2xl mx-auto w-full">
         <div className="flex items-center space-x-2.5">
@@ -187,7 +194,7 @@ export default function MinimalistApp() {
               {isLoading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  <span>Đang bóc tách mã...</span>
+                  <span>Đang bóc tách thông tin sản phẩm...</span>
                 </>
               ) : (
                 <>
@@ -212,7 +219,7 @@ export default function MinimalistApp() {
           </span>
         </div>
 
-        {/* Mốc giờ Flash Sale tiếp theo (Rút gọn thanh mảnh) */}
+        {/* Mốc giờ Flash Sale tiếp theo */}
         <div className="w-full bg-white rounded-xl p-3 border border-slate-200/80 text-xs text-slate-600 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Clock className="w-4 h-4 text-amber-500" />
@@ -224,10 +231,10 @@ export default function MinimalistApp() {
         </div>
       </main>
 
-      {/* 3. Pop-up Mua Hàng Siêu Tinh Gọn (Modal) */}
+      {/* 3. Pop-up Mua Hàng Hiển Thị Thông Tin Sản Phẩm & Mức Giá */}
       {modalData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 space-y-4 animate-in zoom-in-95 duration-150 relative">
+          <div className="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 space-y-4 animate-in zoom-in-95 duration-150 relative">
             {/* Nút Đóng */}
             <button
               onClick={() => setModalData(null)}
@@ -236,34 +243,60 @@ export default function MinimalistApp() {
               <X className="w-4 h-4" />
             </button>
 
-            {/* Header Pop-up */}
-            <div className="flex items-center space-x-3 pr-6">
-              <div className="w-10 h-10 rounded-2xl bg-amber-50 text-xl flex items-center justify-center shrink-0 border border-amber-200/50">
-                {modalData.platformInfo.logo}
-              </div>
-              <div className="overflow-hidden">
-                <span className="text-[10px] font-black uppercase tracking-wider text-amber-700 block">
-                  Đã Gắn Ưu Đãi &bull; {modalData.platformInfo.name}
-                </span>
-                <h3 className="text-sm font-bold text-slate-900 truncate">
-                  {modalData.productName}
-                </h3>
-              </div>
+            {/* Header Sàn */}
+            <div className="flex items-center space-x-2">
+              <span className="text-xl">{modalData.platformInfo.logo}</span>
+              <span className="text-xs font-black uppercase tracking-wider text-amber-600">
+                {modalData.platformInfo.name} &bull; Đã Kích Hoạt Ưu Đãi
+              </span>
             </div>
 
-            {/* Badge Giảm Giá */}
-            <div className="p-3 bg-amber-50/80 rounded-2xl border border-amber-200/60 flex items-center space-x-2">
-              <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
-              <span className="text-xs font-bold text-amber-900">
-                Tự động áp mã Video 50% & Freeship 0Đ
-              </span>
+            {/* Khối Thông Tin Sản Phẩm + Ảnh + Mức Giá */}
+            <div className="bg-slate-50/90 rounded-2xl p-3.5 border border-slate-200/80 flex items-start space-x-3.5">
+              {/* Ảnh Thumbnail Sản Phẩm */}
+              {modalData.productImage ? (
+                <img
+                  src={modalData.productImage}
+                  alt={modalData.productName}
+                  className="w-20 h-20 rounded-xl object-cover border border-slate-200 shrink-0 bg-white shadow-2xs"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 text-2xl border border-amber-200">
+                  {modalData.platformInfo.logo}
+                </div>
+              )}
+
+              {/* Chi Tiết Sản Phẩm & Mức Giá */}
+              <div className="flex-1 min-w-0 space-y-1">
+                <h3 className="text-sm font-bold text-slate-900 leading-snug line-clamp-2">
+                  {modalData.productName}
+                </h3>
+
+                {/* Khối Mức Giá */}
+                <div className="flex flex-col text-xs pt-0.5">
+                  <span className="text-[11px] text-slate-400 font-medium">
+                    Giá chưa giảm: <span className="line-through text-slate-500 font-semibold">{modalData.originalPrice}</span>
+                  </span>
+                  <span className="text-xs font-black text-amber-600 flex items-center space-x-1">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500 inline shrink-0" />
+                    <span>{modalData.discountedPrice}</span>
+                  </span>
+                </div>
+
+                {/* Miêu tả ngắn gọn */}
+                {modalData.description && (
+                  <p className="text-[11px] text-slate-400 font-normal truncate pt-0.5">
+                    {modalData.description}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* NÚT BẤM TO CHÍNH: MỞ APP MUA NGAY */}
             <div className="space-y-2 pt-1">
               <a
-                href={`/go?to=${encodeURIComponent(modalData.affiliateUrl)}&app=${encodeURIComponent(modalData.deeplinkUrl)}&platform=${modalData.platform}&name=${encodeURIComponent(modalData.productName)}`}
-                className="w-full py-4 px-5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-base rounded-2xl shadow-lg shadow-amber-500/25 flex items-center justify-center space-x-2 transition active:scale-98 text-center"
+                href={`/go?to=${encodeURIComponent(modalData.affiliateUrl)}&app=${encodeURIComponent(modalData.deeplinkUrl)}&platform=${modalData.platform}&name=${encodeURIComponent(modalData.productName)}&img=${encodeURIComponent(modalData.productImage || '')}&op=${encodeURIComponent(modalData.originalPrice || '')}&dp=${encodeURIComponent(modalData.discountedPrice || '')}`}
+                className="w-full py-4 px-5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-base rounded-2xl shadow-lg shadow-amber-500/25 flex items-center justify-center space-x-2 transition active:scale-98 text-center ring-4 ring-amber-500/15"
               >
                 <span>⚡ MỞ APP {modalData.platformInfo.name.toUpperCase()} MUA NGAY</span>
                 <ExternalLink className="w-4 h-4" />
@@ -288,7 +321,7 @@ export default function MinimalistApp() {
               </button>
             </div>
 
-            {/* Mã giảm giá bấm sao chép nhanh */}
+            {/* Mã giảm giá áp dụng nhanh */}
             <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
               <span className="text-[11px] text-slate-400 font-medium">Mã hot:</span>
               <div className="flex space-x-1.5">
