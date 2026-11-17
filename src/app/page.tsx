@@ -104,8 +104,11 @@ export default function CleanHomePage() {
     triggerConvert(inputUrl);
   };
 
-  const handleCopyLink = (url: string) => {
-    navigator.clipboard.writeText(url);
+  const handleCopyLink = (data: ConvertData) => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const shareableBridgeUrl = `${origin}/go?to=${encodeURIComponent(data.affiliateUrl)}&app=${encodeURIComponent(data.deeplinkUrl)}&platform=${data.platform}&name=${encodeURIComponent(data.productName)}`;
+
+    navigator.clipboard.writeText(shareableBridgeUrl);
     setCopiedAff(true);
     setTimeout(() => setCopiedAff(false), 2000);
   };
@@ -330,9 +333,7 @@ export default function CleanHomePage() {
             {/* NÚT BẤM TO DUY NHẤT: MỞ APP MUA NGAY */}
             <div className="space-y-2 pt-1">
               <a
-                href={modalData.deeplinkUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={`/go?to=${encodeURIComponent(modalData.affiliateUrl)}&app=${encodeURIComponent(modalData.deeplinkUrl)}&platform=${modalData.platform}&name=${encodeURIComponent(modalData.productName)}`}
                 className="w-full py-4 px-6 bg-gradient-to-r from-orange-500 via-orange-600 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-black text-base sm:text-lg rounded-xl shadow-xl shadow-orange-500/30 flex items-center justify-center space-x-2 transition active:scale-98 text-center ring-4 ring-orange-500/20"
               >
                 <span>⚡ MỞ APP {modalData.platformInfo.name.toUpperCase()} MUA NGAY</span>
@@ -341,13 +342,13 @@ export default function CleanHomePage() {
 
               <button
                 type="button"
-                onClick={() => handleCopyLink(modalData.affiliateUrl)}
+                onClick={() => handleCopyLink(modalData)}
                 className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl flex items-center justify-center space-x-1.5 transition active:scale-95 border border-slate-200"
               >
                 {copiedAff ? (
                   <>
                     <Check className="w-4 h-4 text-emerald-600" />
-                    <span className="text-emerald-700">Đã sao chép link mua hàng!</span>
+                    <span className="text-emerald-700">Đã sao chép link chuyển tiếp thông minh!</span>
                   </>
                 ) : (
                   <>
