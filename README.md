@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🛍️ Tiệm Mã - Hệ Thống Săn Mã Giảm Giá & Tạo Link Affiliate Shopee Tự Động
 
-## Getting Started
+Ứng dụng web tối ưu chuyển đổi tiếp thị liên kết (Affiliate Marketing) tương tự mô hình `tiemma.com`.
 
-First, run the development server:
+---
 
+## 🌟 Tính Năng Nổi Bật (Giai đoạn 1 - MVP)
+
+1. **Dán link & Tự động bóc tách (Link Resolver)**:
+   - Tiếp nhận link rút gọn từ điện thoại: `s.shopee.vn/...`, `shope.ee/...`, `vn.shp.ee/...`, `shopee.vn/...`.
+   - Tự động theo dõi chuyển hướng (Redirect HTTP) để bóc tách **Item ID**, **Shop ID** và tên sản phẩm.
+   - Hỗ trợ nút **"Dán nhanh"** tự động đọc từ bộ nhớ tạm (Clipboard API).
+2. **Tự động gắn mã Affiliate (Affiliate Converter)**:
+   - **Chế độ chính thức**: Kết nối trực tiếp Shopee Open Platform qua chuẩn GraphQL / REST với chữ ký bảo mật HMAC-SHA256.
+   - **Chế độ dự phòng (Fallback)**: Tự động gắn mã tracking `sub_id`, `utm_source`, `utm_campaign` khi chưa có hoặc đang chờ duyệt API key.
+3. **Deeplink App Shopee**:
+   - Tự động tạo link dạng `shopeevn://product?shopId=...&itemId=...`.
+   - Khi người dùng bấm nút trên điện thoại, hệ thống mở thẳng ứng dụng Shopee (không bị kẹt ở trình duyệt web ngoài), tối ưu tối đa tỷ lệ mua hàng.
+4. **Kho Mã Giảm Giá Tổng Hợp**:
+   - Phân loại rõ ràng: Mã Shopee Video (giảm 20% - 50%), Mã Freeship Xtra, Mã Khung giờ vàng (0h, 9h, 12h, 15h, 18h, 20h), Mã ShopeePay.
+   - Sao chép mã 1-click có hiệu ứng thông báo trực quan.
+
+---
+
+## 🚀 Hướng Dẫn Cài Đặt & Khởi Chạy
+
+### 1. Khởi chạy môi trường phát triển (Development)
 ```bash
+# Cài đặt thư viện (nếu chưa cài)
+npm install
+
+# Khởi chạy dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+Truy cập trình duyệt tại địa chỉ: `http://localhost:3000`
+
+### 2. Biên dịch Production
+```bash
+npm run build
+npm run start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ⚙️ Cấu Hình API Shopee Affiliate (`.env.local`)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Mở file `.env.local` tại thư mục gốc để cấu hình:
 
-## Learn More
+```env
+# 1. Sau khi đăng ký tài khoản tại https://affiliate.shopee.vn/ và được cấp Open API:
+SHOPEE_APP_ID=YOUR_APP_ID_HERE
+SHOPEE_SECRET_KEY=YOUR_SECRET_KEY_HERE
 
-To learn more about Next.js, take a look at the following resources:
+# 2. Mã tracking định danh của bạn (sẽ xuất hiện trong báo cáo hoa hồng của Shopee):
+DEFAULT_AFFILIATE_ID=tiemma_vip
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# 3. Giữ true để hệ thống tự động fallback nếu API Shopee bảo trì hoặc chưa cấu hình key:
+ENABLE_FALLBACK_MODE=true
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🌐 Hướng Dẫn Deploy Lên Vercel (Miễn Phí)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Đẩy code lên GitHub:
+   ```bash
+   git init
+   git add .
+   git commit -m "feat: shopee voucher affiliate mvp"
+   git remote add origin https://github.com/username/ten-repo.git
+   git push -u origin main
+   ```
+2. Truy cập [vercel.com](https://vercel.com) -> Chọn **Add New Project** -> Chọn repository vừa push.
+3. Thêm các biến môi trường từ `.env.local` vào mục **Environment Variables** trên Vercel.
+4. Bấm **Deploy** $\rightarrow$ Bạn sẽ có ngay một trang web online chạy 24/7 với tên miền miễn phí `.vercel.app` hoặc gắn tên miền riêng tuỳ thích.
