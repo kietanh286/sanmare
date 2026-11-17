@@ -128,12 +128,17 @@ export default function MinimalistApp() {
       {/* 1. Header Tối Giản */}
       <header className="px-5 py-4 flex items-center justify-between max-w-2xl mx-auto w-full">
         <div className="flex items-center space-x-2.5">
-          <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center font-black text-sm shadow-sm shadow-amber-500/20">
-            M
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center font-black text-sm shadow-sm shadow-amber-500/20">
+            S
           </div>
-          <span className="font-extrabold text-base tracking-tight text-slate-900">
-            MÃ VÀNG
-          </span>
+          <div className="flex flex-col">
+            <span className="font-extrabold text-base tracking-tight text-slate-900 leading-tight">
+              SĂN MÃ RẺ
+            </span>
+            <span className="text-[10px] text-slate-400 font-medium tracking-wide">
+              sanmare.site
+            </span>
+          </div>
         </div>
 
         {/* Badge sự kiện sale */}
@@ -350,7 +355,7 @@ export default function MinimalistApp() {
 
       {/* 4. Footer Tối Giản */}
       <footer className="py-4 text-center text-[11px] text-slate-400">
-        Mã Vàng © 2026 • Tối giản • Nhanh chóng • Miễn phí
+        sanmare.site • Săn Mã Rẻ © 2026 • Tối giản • Nhanh chóng • Miễn phí
       </footer>
     </div>
   );

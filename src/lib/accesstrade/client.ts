@@ -35,7 +35,7 @@ export async function createAccesstradeLink(
     const payload = {
       campaign_id: campaignId,
       urls: [originalUrl],
-      utm_source: 'tiemma',
+      utm_source: 'sanmare',
       utm_medium: 'web_converter',
       utm_campaign: 'flash_sale',
       sub1: sub1 || 'user_guest',

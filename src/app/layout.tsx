@@ -19,18 +19,20 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Mã Vàng - 1 Giây Săn Mã &bull; Mở App Mua Rẻ',
+  title: 'Săn Mã Rẻ (sanmare.site) - 1 Giây Săn Mã • Mở App Mua Rẻ',
   description:
-    'Công cụ tối giản giúp dán link Shopee, Lazada, TikTok Shop để tự động kích hoạt mã giảm giá Video 50%, Freeship 0Đ và mở app mua hàng ngay lập tức.',
+    'Săn Mã Rẻ (sanmare.site) - Công cụ tối giản giúp dán link Shopee, Lazada, TikTok Shop để tự động kích hoạt mã giảm giá Video 50%, Freeship 0Đ và mở app mua hàng ngay lập tức.',
   keywords: [
-    'mã vàng',
+    'săn mã rẻ',
+    'sanmare.site',
     'săn mã',
     'mã giảm giá shopee',
     'mã video tiktok',
     'lazada affiliate',
     'voucher giảm giá',
   ],
-  authors: [{ name: 'Mã Vàng' }],
+  authors: [{ name: 'Săn Mã Rẻ' }],
+  metadataBase: new URL('https://sanmare.site'),
 };
 
 export default function RootLayout({

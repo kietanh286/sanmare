@@ -75,7 +75,7 @@ export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: 
   const targetUrl = urlMatch ? urlMatch[0] : rawInput.trim();
   const platform = detectPlatform(targetUrl);
 
-  const affTag = customAffTag || process.env.DEFAULT_AFFILIATE_ID || 'tiemma_vip';
+  const affTag = customAffTag || process.env.DEFAULT_AFFILIATE_ID || 'sanmare_vip';
 
   let canonicalUrl = targetUrl;
   let itemId = '';
@@ -206,7 +206,7 @@ export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: 
     if (platform === 'shopee') {
       parsedUrl.searchParams.set('aff_sub', affTag);
       parsedUrl.searchParams.set('utm_source', 'affiliate');
-      parsedUrl.searchParams.set('utm_medium', 'tiemma');
+      parsedUrl.searchParams.set('utm_medium', 'sanmare');
       parsedUrl.searchParams.set('utm_campaign', affTag);
       affiliateUrl = parsedUrl.toString();
     } else if (platform === 'lazada') {
