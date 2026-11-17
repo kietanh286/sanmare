@@ -9,13 +9,6 @@ export interface AccesstradeLinkResult {
   isSuccess: boolean;
 }
 
-// Campaign ID mặc định của các sàn lớn trên Accesstrade Việt Nam
-export const DEFAULT_CAMPAIGNS: Record<string, string> = {
-  shopee: process.env.SHOPEE_CAMPAIGN_ID || '4751584435713464253',
-  lazada: process.env.LAZADA_CAMPAIGN_ID || '4348614231480407268',
-  tiktok: process.env.TIKTOK_CAMPAIGN_ID || '5167096677940182601',
-};
-
 /**
  * Gọi API Accesstrade để sinh link affiliate (aff_link & short_link)
  */
@@ -30,7 +23,13 @@ export async function createAccesstradeLink(
     return null;
   }
 
-  const campaignId = DEFAULT_CAMPAIGNS[platform] || DEFAULT_CAMPAIGNS.shopee;
+  const campaigns: Record<string, string> = {
+    shopee: process.env.SHOPEE_CAMPAIGN_ID || '4751584435713464253',
+    lazada: process.env.LAZADA_CAMPAIGN_ID || '4348614231480407268',
+    tiktok: process.env.TIKTOK_CAMPAIGN_ID || '6648523843406889655',
+  };
+
+  const campaignId = campaigns[platform] || campaigns.shopee;
 
   try {
     const payload = {
