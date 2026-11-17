@@ -100,7 +100,7 @@ export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: 
 
   const parsedUrl = new URL(canonicalUrl);
 
-  // Bóc tách ID sản phẩm theo từng sàn
+  // Bóc tách ID sản phẩm & Tên sản phẩm theo từng sàn
   if (platform === 'shopee') {
     const matchStandard = parsedUrl.pathname.match(/-i\.(\d+)\.(\d+)/);
     const matchProduct = parsedUrl.pathname.match(/\/product\/(\d+)\/(\d+)/);
@@ -122,10 +122,29 @@ export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: 
     }
     productName = 'Sản phẩm Lazada';
   } else if (platform === 'tiktok') {
-    productName = 'Sản phẩm TikTok Shop';
+    // Trích xuất ID sản phẩm TikTok
+    const matchTiktokProduct = parsedUrl.pathname.match(/\/view\/product\/(\d+)/);
+    if (matchTiktokProduct) {
+      itemId = matchTiktokProduct[1];
+    } else {
+      itemId = parsedUrl.searchParams.get('product_id') || '';
+    }
+
+    // Trích xuất tên sản phẩm từ tham số og_info nếu có
+    const ogInfo = parsedUrl.searchParams.get('og_info');
+    if (ogInfo) {
+      try {
+        const og = JSON.parse(ogInfo);
+        if (og.title) {
+          productName = og.title;
+        }
+      } catch {
+        // bỏ qua nếu parse lỗi
+      }
+    }
   }
 
-  // 1. Thử tạo link Affiliate qua ACCESSTRADE API
+  // 1. Gọi ACCESSTRADE API để tạo link Affiliate chính thức
   const atResult = await createAccesstradeLink(platform, canonicalUrl, affTag);
 
   let affiliateUrl = atResult?.shortLink || atResult?.affLink || '';
@@ -149,12 +168,15 @@ export async function resolveMultiPlatformLink(rawInput: string, customAffTag?: 
     }
   }
 
-  // 3. Tạo Deeplink App thông minh
+  // 3. Tạo Deeplink kích hoạt ứng dụng trên điện thoại (iOS / Android)
   let deeplinkUrl = affiliateUrl;
   if (platform === 'shopee' && itemId && shopId) {
     deeplinkUrl = `shopeevn://product?shopId=${shopId}&itemId=${itemId}`;
   } else if (platform === 'lazada' && itemId) {
     deeplinkUrl = `lazada://item?itemId=${itemId}`;
+  } else if (platform === 'tiktok' && itemId) {
+    // Deeplink trực tiếp vào trang sản phẩm trên App TikTok
+    deeplinkUrl = `snssdk1180://ec/pdp?product_id=${itemId}`;
   }
 
   return {
